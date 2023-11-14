@@ -1,0 +1,207 @@
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+/* --------------------------------------- */
+/* --------------- GENERAL --------------- */
+/* --------------------------------------- */
+
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    /* Theme Colors */
+    --background-color: #ADD795;
+    --background-color2: #529172;
+    --highlights: #F0FDDD;
+    --dark: #15363B;
+    /* Font */
+    font-family: 'Roboto', sans-serif;
+    --main-font: 'Roboto', sans-serif;
+    --title-font-size: 5rem;
+    --large-font-size: 3rem;
+    --med-font-size: 1.5rem;
+}
+
+::selection {
+    /* text highlight costumization */
+    background-color: var(--highlights); 
+    color: var(--background-color2); 
+}
+
+/* --------------------------------------- */
+/* ----------------- BODY ---------------- */
+/* --------------------------------------- */
+
+body {
+    width: 100vw;
+    min-height: 100vh;
+    background-color: var(--background-color);
+    color: var(--dark);
+    display: grid;
+    justify-content: space-between;
+    grid-template: 1fr 5fr 1fr / 1fr 2fr 1fr; 
+    grid-template-areas:
+        "title     title    title"
+        "player1   board  player2"
+        "status    status  status"
+}
+
+/* --------------------------------------- */
+/* ---------------- TITLE ---------------- */
+/* --------------------------------------- */
+
+#title-div {
+    grid-area: title;
+    /* background-color: pink; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+#title-div > h1 {
+    font-size: var(--title-font-size);
+}
+
+/* --------------------------------------- */
+/* --------------- PLAYER ---------------- */
+/* --------------------------------------- */
+
+#player1-div {
+    grid-area: player1;
+    /* background-color: blue; */
+}
+
+#player2-div {
+    grid-area: player2;
+    /* background-color: purple; */
+}
+
+.player-div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.player-div > h2 {
+    font-size: var(--large-font-size);
+    margin-bottom: 20px;
+}
+
+.player-div > h3 {
+    font-size: var(--med-font-size);
+}
+
+/* --------------------------------------- */
+/* ---------------- BOARD ---------------- */
+/* --------------------------------------- */
+
+#board-div {
+    grid-area: board;
+    /* background-color: gold; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#board-grid-div {
+    display: grid;
+    grid-template-columns: repeat(3, 8vw);
+    grid-template-rows: repeat(3, 8vw);
+    gap: 10px;
+}
+
+.board-block-div {
+    background-color: var(--background-color2);
+}
+
+.board-block-div:hover {
+    background-color: var(--dark);
+}
+
+/* --------------------------------------- */
+/* ---------------- STATUS --------------- */
+/* --------------------------------------- */
+
+#status-div {
+    grid-area: status;
+    /* background-color: gray; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* --------------------------------------- */
+/* -------- DEFAULT ELEMENT LOOKS -------- */
+/* --------------------------------------- */
+
+/* ------ */
+/* BUTTON */
+/* ------ */
+
+button {
+    display: inline-block;
+    padding: 10px 40px;
+    font-size: var(--med-font-size);
+    background-color: var(--background-color2); 
+    color: var(--dark);
+    border: 3px solid var(--dark); 
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+  
+button:hover {
+    background-color: var(--background-color); /* Change background color on hover */
+    box-shadow: 4px 4px 2px var(--dark);
+}

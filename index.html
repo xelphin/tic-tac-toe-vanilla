@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe (Vanilla JS)</title>
+    <!-- STYLESHEET -->
+    <link rel="stylesheet" href="./stylesheet.css">
+    <!-- FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- TITLE -->
+    <div id="title-div">
+        <h1>Tic-Tac-Toe</h1>
+    </div>
+
+    <!-- PLAYER 1 -->
+    <div id="player1-div" class="player-div">
+        <h2>Player 1</h2>
+        <h3 id="player1-score">Score: 0</h3>
+    </div>
+
+    <!-- BOARD -->
+    <div id="board-div">
+        <div id="board-grid-div">
+            <div class="board-block-div" data-block="0"></div>
+            <div class="board-block-div" data-block="1"></div>
+            <div class="board-block-div" data-block="2"></div>
+            <div class="board-block-div" data-block="3"></div>
+            <div class="board-block-div" data-block="4"></div>
+            <div class="board-block-div" data-block="5"></div>
+            <div class="board-block-div" data-block="6"></div>
+            <div class="board-block-div" data-block="7"></div>
+            <div class="board-block-div" data-block="8"></div>
+        </div>
+    </div>
+
+    <!-- PLAYER 2 -->
+    <div id="player2-div" class="player-div">
+        <h2>Player 2</h2>
+        <h3 id="player2-score">Score: 0</h3>
+    </div>
+
+    <!-- STATUS -->
+    <div id="status-div">
+        <button id="start-btn">Start</button>
+    </div>
+    
+    <!-- SCRIPT -->
+    <script src="./script.js" defer></script>
+</body>
+</html>
