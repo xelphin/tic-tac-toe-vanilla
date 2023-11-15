@@ -1,4 +1,42 @@
+// --------------------------------------------
+//                  GLOBALS
+// --------------------------------------------
 
+const lineSize = 3;
+const emptyString = " ";
+
+// --------------------------------------------
+//                  HELPERS
+// --------------------------------------------
+
+const HelperDOM = (function () {
+    const findIndexInParent = (node) => {
+        let parent = node.parentNode;
+        if (parent) {
+            let children = parent.childNodes;
+            let countDivs = 0;
+            for (let i = 0; i < children.length; i++) {
+                if (children[i] === node) {
+                    return countDivs;
+                }
+                if (children[i].nodeName == 'DIV') {
+                    countDivs++;
+                }
+            }
+        }
+        return -1; // Not found
+    }
+    const findNodeIndex = (node, nodeList) => {
+        for (let i = 0; i < nodeList.length; i++) {
+            if (nodeList[i] === node) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    return { findIndexInParent, findNodeIndex };
+})();
 
 // --------------------------------------------
 //                   PLAYER
@@ -22,13 +60,15 @@ function createPlayer (num, name, symbol) {
 // --------------------------------------------
 
 const Board_DOM = (function () {
-    // DOM
+
     const blocksNodeList = document.querySelectorAll(".board-block-div");
 
     const getBlock = (index) => {
         if (index < 0 || index >= blocksNodeList.length) return null;
         return blocksNodeList[index];
     }
+
+    // PUBLIC
 
     const addSignToBlock = (sign, index) => {
         let block = getBlock(index);
@@ -41,7 +81,7 @@ const Board_DOM = (function () {
     const resetBlocks = () => {
         for (let i=0; i< blocksNodeList.length; i++) {
             addSignToBlock("", i);
-            getBlock(index).classList.add('block-allow-hover'); 
+            getBlock(i).classList.add('block-allow-hover'); 
         }
     }
 
@@ -54,50 +94,40 @@ const Board_DOM = (function () {
     
   })();
 
-const Board = (function () {
+  const Board_Helper = (function () {
 
-    // PRIVATE
-    const lineSize = 3;
-    const boardSize = lineSize*lineSize;
-    const emptyString = " ";
-    let blocks = Array(boardSize).fill(emptyString);
-    let mostRecentAddIndex = -1;
-    let count = 0;
-
-
-
-    // HELPER FUNCTIONS
 
     const indexToRowCol = (index) => {
-        const row = Math.floor(index / 3);
-        const col = index % 3;
+        const row = Math.floor(index / lineSize);
+        const col = index % lineSize;
       
         return { row, col };
     };
     const rowColToIndex = (row, col) => {
-        return (row*3 + col)
+        return (row*lineSize + col)
     };
 
 
-    const checkRowForWin = (row) => {
-        let sign = blocks[row*3];
+    const checkRowForWin = (row, blocks) => {
+        let sign = blocks[row*lineSize];
         if (sign == emptyString) return false;
         for (let i=1; i < lineSize; i++) {
-            if (blocks[row*3 + i] != sign) return false;
+            if (blocks[row*lineSize + i] != sign) return false;
         }
         return true
     }
 
-    const checkColForWin = (col) => {
+    const checkColForWin = (col, blocks) => {
         let sign = blocks[col];
         if (sign == emptyString) return false;
         for (let i=1; i < lineSize; i++) {
-            if (blocks[i*3 + col] != sign) return false;
+            if (blocks[i*lineSize + col] != sign) return false;
         }
         return true
     }
 
-    const checkForDiagWin = () => {
+    const checkForDiagWin = (blocks) => {
+        // Note: Only works well for 3x3 board
         let sign = blocks[4];
         if (sign == emptyString) return false;
         if (blocks[0] == sign && blocks[8] == sign) return true;
@@ -105,12 +135,30 @@ const Board = (function () {
         return false;
     }
 
+    return {indexToRowCol, rowColToIndex, checkRowForWin, checkColForWin, checkForDiagWin};
+})();
+
+const Board = (function () {
+
+    // PRIVATE
+    const boardSize = lineSize*lineSize;
+    
+    let blocks = Array(boardSize).fill(emptyString);
+    let mostRecentAddIndex = -1;
+    let count = 0;
+
+
     // PUBLIC FUNCTIONS
 
     const checkWin = () => {
         if (mostRecentAddIndex <0 || mostRecentAddIndex >= boardSize) return false;
-        let {row, col} = indexToRowCol(mostRecentAddIndex);
-        if (checkRowForWin(row) || checkColForWin(col) || checkForDiagWin()) return true;
+        let {row, col} = Board_Helper.indexToRowCol(mostRecentAddIndex);
+        if (   Board_Helper.checkRowForWin(row, blocks) 
+            || Board_Helper.checkColForWin(col, blocks) 
+            || Board_Helper.checkForDiagWin(blocks)) 
+        {
+            return true;
+        }
         return false;
     }
 
@@ -145,7 +193,11 @@ const Board = (function () {
         const horizontalEdge = "-----------"
         console.log(horizontalEdge);
         for(let i=0; i < lineSize; i++) {
-            console.log(`|${blocks[rowColToIndex(i,0)]}|${blocks[rowColToIndex(i,1)]}|${blocks[rowColToIndex(i,2)]}|`);
+            let lineString = "|";
+            for (let j=0; j< lineSize; j++) {
+                lineString += blocks[Board_Helper.rowColToIndex(i,j)] + "|"
+            }
+            console.log(lineString);
         }
         console.log(horizontalEdge);
     }
@@ -165,6 +217,8 @@ const Game = (function () {
     const player2 = createPlayer(2, "player2", "O");
     let currPlayer = player1;
     let gameEnded = false;
+    // DOM
+    const blocksNodeList = document.querySelectorAll(".board-block-div");
 
     const playTurn = (index) => {
         if (gameEnded) {
@@ -197,13 +251,23 @@ const Game = (function () {
         console.log("Reset Game");
     }
 
+    const initBlocks = () => {
+        console.log(blocksNodeList);
+        
+        let bookInfoDiv = document.createElement('div');
+        bookInfoDiv.className = 'book-info-div';
+
+
+        for (let i=0; i < blocksNodeList.length; i++) {
+            blocksNodeList[i].addEventListener("click", (event) => {
+                let index = HelperDOM.findNodeIndex(event.target, blocksNodeList);
+                playTurn(index);
+            });
+        }
+    }
+
     const start = () => {
-        playTurn(4);
-        playTurn(3);
-        playTurn(9);
-        playTurn(4);
-        playTurn(5);
-        playTurn(6);
+        initBlocks();
     }
 
     return {start};
