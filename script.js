@@ -112,37 +112,41 @@ const Board_DOM = (function () {
         return { row, col };
     };
     const rowColToIndex = (row, col) => {
-        return (row*lineSize + col)
+        return (row*lineSize + col);
     };
 
-    const checkRowForWin = (row, blocks) => {
-        let sign = blocks[row*lineSize];
-        if (sign == emptyString) return false;
-        for (let i=1; i < lineSize; i++) {
+    const checkRowForWin = (row, blocks, sign) => {
+        for (let i=0; i < lineSize; i++) {
             if (blocks[row*lineSize + i] != sign) return false;
         }
-        return true
+        return true;
     }
 
-    const checkColForWin = (col, blocks) => {
-        let sign = blocks[col];
-        if (sign == emptyString) return false;
-        for (let i=1; i < lineSize; i++) {
+    const checkColForWin = (col, blocks, sign) => {
+        for (let i=0; i < lineSize; i++) {
             if (blocks[i*lineSize + col] != sign) return false;
         }
-        return true
+        return true;
     }
 
-    const checkForDiagWin = (blocks) => {
-        // Note: Only works well for 3x3 board
-        let sign = blocks[4];
-        if (sign == emptyString) return false;
-        if (blocks[0] == sign && blocks[8] == sign) return true;
-        if (blocks[2] == sign && blocks[6] == sign) return true;
+    const checkForDiagWin = (blocks, sign) => {
+        if (blocks[0] == sign && blocks[4] == sign && blocks[8] == sign) return true;
+        if (blocks[2] == sign && blocks[4] == sign &&  blocks[6] == sign) return true;
         return false;
     }
 
-    return {indexToRowCol, rowColToIndex, checkRowForWin, checkColForWin, checkForDiagWin};
+    const checkWin = (blocks, sign) => {
+        let {row, col} = Board_Helper.indexToRowCol(mostRecentAddIndex);
+        if (   checkRowForWin(row, blocks, sign) 
+            || checkColForWin(col, blocks, sign) 
+            || checkForDiagWin(blocks, sign)) 
+        {
+            return true;
+        }
+        return false;
+    }
+
+    return {indexToRowCol, rowColToIndex, checkWin};
 })();
 
 const Board = (function () {
@@ -154,14 +158,7 @@ const Board = (function () {
 
     const checkWin = () => {
         if (mostRecentAddIndex <0 || mostRecentAddIndex >= boardSize) return false;
-        let {row, col} = Board_Helper.indexToRowCol(mostRecentAddIndex);
-        if (   Board_Helper.checkRowForWin(row, blocks) 
-            || Board_Helper.checkColForWin(col, blocks) 
-            || Board_Helper.checkForDiagWin(blocks)) 
-        {
-            return true;
-        }
-        return false;
+        return checkWin(blocks, blocks[mostRecentAddIndex]);
     }
 
     const checkFull = () => {
