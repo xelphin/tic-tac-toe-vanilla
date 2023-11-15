@@ -10,22 +10,6 @@ const emptyString = " ";
 // --------------------------------------------
 
 const HelperDOM = (function () {
-    const findIndexInParent = (node) => {
-        let parent = node.parentNode;
-        if (parent) {
-            let children = parent.childNodes;
-            let countDivs = 0;
-            for (let i = 0; i < children.length; i++) {
-                if (children[i] === node) {
-                    return countDivs;
-                }
-                if (children[i].nodeName == 'DIV') {
-                    countDivs++;
-                }
-            }
-        }
-        return -1; // Not found
-    }
     const findNodeIndex = (node, nodeList) => {
         for (let i = 0; i < nodeList.length; i++) {
             if (nodeList[i] === node) {
@@ -35,7 +19,7 @@ const HelperDOM = (function () {
         return -1;
     }
 
-    return { findIndexInParent, findNodeIndex };
+    return { findNodeIndex };
 })();
 
 // --------------------------------------------
@@ -51,7 +35,6 @@ const Players_DOM = (function () {
         if (index < 0 || index > playerScores.length) return;
         playerScores[index].textContent = "Score: "+score.toString(10);
     }
-
 
     return {incScore };
 })();
@@ -87,6 +70,11 @@ const Board_DOM = (function () {
         return blocksNodeList[index];
     }
 
+    const blockEventListener = (event) => {
+        let index = HelperDOM.findNodeIndex(event.target, blocksNodeList);
+        Game.playTurn(index);
+    }
+
     // PUBLIC
 
     const addSignToBlock = (sign, index) => {
@@ -97,24 +85,25 @@ const Board_DOM = (function () {
         }
     }
 
-    const resetBlocks = () => {
-        for (let i=0; i< blocksNodeList.length; i++) {
-            addSignToBlock("", i);
-            getBlock(i).classList.add('block-allow-hover'); 
+    const addBlockListener = () => {
+        for (let i=0; i < blocksNodeList.length; i++) {
+            blocksNodeList[i].addEventListener("click", blockEventListener);
         }
     }
 
-    const printNodeList = () => {
-        console.log(blocksNodeList);
+    const resetBlocks = () => {
+        for (let i=0; i< blocksNodeList.length; i++) {
+            addSignToBlock(emptyString, i);
+            getBlock(i).classList.add('block-allow-hover'); 
+            blocksNodeList[i].removeEventListener("click", blockEventListener);
+        }
     }
 
-
-    return {addSignToBlock, resetBlocks, printNodeList};
+    return {addSignToBlock, addBlockListener, resetBlocks};
     
   })();
 
   const Board_Helper = (function () {
-
 
     const indexToRowCol = (index) => {
         const row = Math.floor(index / lineSize);
@@ -125,7 +114,6 @@ const Board_DOM = (function () {
     const rowColToIndex = (row, col) => {
         return (row*lineSize + col)
     };
-
 
     const checkRowForWin = (row, blocks) => {
         let sign = blocks[row*lineSize];
@@ -159,15 +147,10 @@ const Board_DOM = (function () {
 
 const Board = (function () {
 
-    // PRIVATE
     const boardSize = lineSize*lineSize;
-    
     let blocks = Array(boardSize).fill(emptyString);
     let mostRecentAddIndex = -1;
     let count = 0;
-
-
-    // PUBLIC FUNCTIONS
 
     const checkWin = () => {
         if (mostRecentAddIndex <0 || mostRecentAddIndex >= boardSize) return false;
@@ -209,31 +192,48 @@ const Board = (function () {
         Board_DOM.resetBlocks();
     }
 
-    const printBoard = () => {
-        const horizontalEdge = "-----------"
-        console.log(horizontalEdge);
-        for(let i=0; i < lineSize; i++) {
-            let lineString = "|";
-            for (let j=0; j< lineSize; j++) {
-                lineString += blocks[Board_Helper.rowColToIndex(i,j)] + "|"
-            }
-            console.log(lineString);
-        }
-        console.log(horizontalEdge);
-    }
-
-    const printBoardArr = () => {
-        console.log(blocks);
+    const allowPlaying = () => {
+        Board_DOM.addBlockListener();
     }
 
 
-    return {checkWin, checkFull, addSignToBlock, reset, printBoard, printBoardArr};
+
+    return {checkWin, checkFull, addSignToBlock, reset, allowPlaying};
 })();
 
 
 // --------------------------------------------
 //                   GAME
 // --------------------------------------------
+
+const Game_DOM = (function () {
+    
+    const statusInfo = document.querySelector("#status-info");
+    const startBtn = document.querySelector("#start-btn");
+
+    const hideStartBtn = () => {
+        startBtn.style.display = 'none';
+        startBtn.textContent = "Play Again";
+    }
+
+    const showStartBtn = () => {
+        startBtn.style.display = 'block';
+    }
+
+    const showStatus = () => {
+        let gameState = Game.getGameState();
+        if (gameState == -1 || gameState == -2) {
+            return;
+        }
+        if (gameState == 0) {
+            statusInfo.textContent = "Tie"; 
+        } else {
+            statusInfo.textContent = "Player"+gameState+" Won!"; 
+        }
+    }
+
+    return { hideStartBtn, showStartBtn, showStatus };
+  })();
 
 const Game = (function () {
     
@@ -243,15 +243,8 @@ const Game = (function () {
     let gameEnded = false;
     let gameState = -1;
     // DOM
-    const blocksNodeList = document.querySelectorAll(".board-block-div");
     const statusInfo = document.querySelector("#status-info");
     const startBtn = document.querySelector("#start-btn");
-
-    const blockEventListener = (event) => {
-        let index = HelperDOM.findNodeIndex(event.target, blocksNodeList);
-        playTurn(index);
-        console.log("Finished a turn");
-    }
 
     const reset = () => {
         currPlayer = player1;
@@ -259,33 +252,23 @@ const Game = (function () {
         Board.reset();
         gameState = -1;
         statusInfo.textContent = "";
-        for (let i=0; i < blocksNodeList.length; i++) {
-            blocksNodeList[i].removeEventListener("click", blockEventListener);
-        }
         console.log("Reset Game");
     }
 
     const playTurn_aux = (index) => {
         if (gameEnded) {
-            console.log("The game has already ended");
+            console.log("Game has already ended.");
             return currPlayer.getNum();
         }
-        Board.printBoardArr();
         if (!Board.addSignToBlock(currPlayer, index)) {
             return -2;
         }
 
-        Board.printBoard();
-
         if (Board.checkWin()) {
-            console.log(`Player${currPlayer.getNum()} won!`);
-            gameEnded = true;
             currPlayer.incScore();
             return currPlayer.getNum();
         }
         if (Board.checkFull()) {
-            console.log(`Tie`);
-            gameEnded = true;
             return 0;
         }
 
@@ -295,43 +278,24 @@ const Game = (function () {
 
     const playTurn = (index) => {
         gameState = playTurn_aux(index);
-        if (gameState == -1 || gameState == -2) {
-            return;
-        }
-        if (gameState == 0) {
-            statusInfo.textContent = "Tie"; 
-        } else {
-            statusInfo.textContent = "Player"+gameState+" Won!"; 
-        }
-        console.log("Game State: ", gameState);
-        startBtn.style.display = 'block';
-    }
-
-    const initBlocks = () => {
-        console.log(blocksNodeList);
-        
-        let bookInfoDiv = document.createElement('div');
-        bookInfoDiv.className = 'book-info-div';
-
-        for (let i=0; i < blocksNodeList.length; i++) {
-            blocksNodeList[i].addEventListener("click", blockEventListener);
+        if (gameState >=0 ) {
+            gameEnded = true;
+            Game_DOM.showStartBtn();
+            Game_DOM.showStatus();
         }
     }
 
-    const initStartBtn = () => {
+    const getGameState = () => gameState;
+
+    const start = () => {
         startBtn.addEventListener("click", () => {
             reset();
-            initBlocks();
-            startBtn.style.display = 'none';
-            startBtn.textContent = "Play Again";
+            Game_DOM.hideStartBtn();
+            Board.allowPlaying();
         });
     }
 
-    const start = () => {
-        initStartBtn();
-    }
-
-    return {start};
+    return {playTurn, getGameState, start};
   })();
 
   Game.start();
