@@ -191,7 +191,7 @@ const Board = (function () {
             return false;
         }
         if (blocks[index] != emptyString) {
-            console.log("Block already taken");
+            console.log("Block already taken: at block there's already ", blocks[index]);
             return false;
         }
         blocks[index] = player.getNum().toString(10);
@@ -206,6 +206,7 @@ const Board = (function () {
         blocks = Array(boardSize).fill(emptyString);
         mostRecentAddIndex = -1;
         count = 0;
+        Board_DOM.resetBlocks();
     }
 
     const printBoard = () => {
@@ -221,8 +222,12 @@ const Board = (function () {
         console.log(horizontalEdge);
     }
 
+    const printBoardArr = () => {
+        console.log(blocks);
+    }
 
-    return {checkWin, checkFull, addSignToBlock, reset, printBoard};
+
+    return {checkWin, checkFull, addSignToBlock, reset, printBoard, printBoardArr};
 })();
 
 
@@ -236,15 +241,39 @@ const Game = (function () {
     const player2 = createPlayer(2, "player2", "O");
     let currPlayer = player1;
     let gameEnded = false;
+    let gameState = -1;
     // DOM
     const blocksNodeList = document.querySelectorAll(".board-block-div");
+    const statusInfo = document.querySelector("#status-info");
+    const startBtn = document.querySelector("#start-btn");
 
-    const playTurn = (index) => {
+    const blockEventListener = (event) => {
+        let index = HelperDOM.findNodeIndex(event.target, blocksNodeList);
+        playTurn(index);
+        console.log("Finished a turn");
+    }
+
+    const reset = () => {
+        currPlayer = player1;
+        gameEnded = false;
+        Board.reset();
+        gameState = -1;
+        statusInfo.textContent = "";
+        for (let i=0; i < blocksNodeList.length; i++) {
+            blocksNodeList[i].removeEventListener("click", blockEventListener);
+        }
+        console.log("Reset Game");
+    }
+
+    const playTurn_aux = (index) => {
         if (gameEnded) {
             console.log("The game has already ended");
-            return -1;
+            return currPlayer.getNum();
         }
-        if (!Board.addSignToBlock(currPlayer, index)) return -2;
+        Board.printBoardArr();
+        if (!Board.addSignToBlock(currPlayer, index)) {
+            return -2;
+        }
 
         Board.printBoard();
 
@@ -264,11 +293,18 @@ const Game = (function () {
         return -1;
     }
 
-    const reset = () => {
-        currPlayer = player1;
-        gameEnded = false;
-        Board.reset();
-        console.log("Reset Game");
+    const playTurn = (index) => {
+        gameState = playTurn_aux(index);
+        if (gameState == -1 || gameState == -2) {
+            return;
+        }
+        if (gameState == 0) {
+            statusInfo.textContent = "Tie"; 
+        } else {
+            statusInfo.textContent = "Player"+gameState+" Won!"; 
+        }
+        console.log("Game State: ", gameState);
+        startBtn.style.display = 'block';
     }
 
     const initBlocks = () => {
@@ -277,17 +313,22 @@ const Game = (function () {
         let bookInfoDiv = document.createElement('div');
         bookInfoDiv.className = 'book-info-div';
 
-
         for (let i=0; i < blocksNodeList.length; i++) {
-            blocksNodeList[i].addEventListener("click", (event) => {
-                let index = HelperDOM.findNodeIndex(event.target, blocksNodeList);
-                playTurn(index);
-            });
+            blocksNodeList[i].addEventListener("click", blockEventListener);
         }
     }
 
+    const initStartBtn = () => {
+        startBtn.addEventListener("click", () => {
+            reset();
+            initBlocks();
+            startBtn.style.display = 'none';
+            startBtn.textContent = "Play Again";
+        });
+    }
+
     const start = () => {
-        initBlocks();
+        initStartBtn();
     }
 
     return {start};
