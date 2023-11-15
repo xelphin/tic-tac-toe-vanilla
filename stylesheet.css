@@ -161,9 +161,13 @@ body {
 
 .board-block-div {
     background-color: var(--background-color2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: var(--large-font-size);
 }
 
-.board-block-div:hover {
+.block-allow-hover:hover {
     background-color: var(--dark);
 }
 

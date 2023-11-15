@@ -21,6 +21,39 @@ function createPlayer (num, name, symbol) {
 //                   BOARD
 // --------------------------------------------
 
+const Board_DOM = (function () {
+    // DOM
+    const blocksNodeList = document.querySelectorAll(".board-block-div");
+
+    const getBlock = (index) => {
+        if (index < 0 || index >= blocksNodeList.length) return null;
+        return blocksNodeList[index];
+    }
+
+    const addSignToBlock = (sign, index) => {
+        let block = getBlock(index);
+        if (block != null) {
+            block.textContent = sign;
+            block.classList.remove('block-allow-hover'); 
+        }
+    }
+
+    const resetBlocks = () => {
+        for (let i=0; i< blocksNodeList.length; i++) {
+            addSignToBlock("", i);
+            getBlock(index).classList.add('block-allow-hover'); 
+        }
+    }
+
+    const printNodeList = () => {
+        console.log(blocksNodeList);
+    }
+
+
+    return {addSignToBlock, resetBlocks, printNodeList};
+    
+  })();
+
 const Board = (function () {
 
     // PRIVATE
@@ -30,8 +63,7 @@ const Board = (function () {
     let blocks = Array(boardSize).fill(emptyString);
     let mostRecentAddIndex = -1;
     let count = 0;
-    // DOM
-    const blocksNodeList = document.querySelectorAll(".board-block-div");
+
 
 
     // HELPER FUNCTIONS
@@ -98,9 +130,7 @@ const Board = (function () {
         blocks[index] = player.getNum().toString(10);
         mostRecentAddIndex = index;
         count++;
-        // TODO: Add to DOM the 'sign'
-
-        // I don't think i need 'data-block="0"' , picking nth element from nodelist should do it
+        Board_DOM.addSignToBlock(player.getSymbol(), index);
 
         return true;
     }
@@ -174,17 +204,6 @@ const Game = (function () {
         playTurn(4);
         playTurn(5);
         playTurn(6);
-        playTurn(8);
-        playTurn(0);
-        playTurn(1);
-        playTurn(2);
-        reset();
-        playTurn(3);
-        playTurn(6);
-        playTurn(4);
-        playTurn(7);
-        playTurn(5);
-        playTurn(8);
     }
 
     return {start};
