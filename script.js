@@ -42,6 +42,22 @@ const HelperDOM = (function () {
 //                   PLAYER
 // --------------------------------------------
 
+const Players_DOM = (function () {
+    
+    const playerScores = document.querySelectorAll(".player-score");
+
+    const incScore = (playerNum, score) => {
+        let index = playerNum -1;
+        if (index < 0 || index > playerScores.length) return;
+        playerScores[index].textContent = "Score: "+score.toString(10);
+    }
+
+
+    return {incScore };
+})();
+
+
+
 function createPlayer (num, name, symbol) {
     
     let score = 0;
@@ -50,7 +66,10 @@ function createPlayer (num, name, symbol) {
     const getName = () => name;
     const getSymbol = () => symbol;
     const getScore = () => score;
-    const incScore = () => score++;
+    const incScore = () => {
+        score++;
+        Players_DOM.incScore(num, score);
+    }
 
     return {getNum, getName, getSymbol, getScore, incScore};
 }
@@ -232,6 +251,7 @@ const Game = (function () {
         if (Board.checkWin()) {
             console.log(`Player${currPlayer.getNum()} won!`);
             gameEnded = true;
+            currPlayer.incScore();
             return currPlayer.getNum();
         }
         if (Board.checkFull()) {
