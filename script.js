@@ -49,7 +49,7 @@ const Board = (function () {
 
     const checkRowForWin = (row) => {
         let sign = blocks[row*3];
-        if (sign == '') return false;
+        if (sign == emptyString) return false;
         for (let i=1; i < lineSize; i++) {
             if (blocks[row*3 + i] != sign) return false;
         }
@@ -58,7 +58,7 @@ const Board = (function () {
 
     const checkColForWin = (col) => {
         let sign = blocks[col];
-        if (sign == '') return false;
+        if (sign == emptyString) return false;
         for (let i=1; i < lineSize; i++) {
             if (blocks[i*3 + col] != sign) return false;
         }
@@ -67,7 +67,7 @@ const Board = (function () {
 
     const checkForDiagWin = () => {
         let sign = blocks[4];
-        if (sign == '') return false;
+        if (sign == emptyString) return false;
         if (blocks[0] == sign && blocks[8] == sign) return true;
         if (blocks[2] == sign && blocks[6] == sign) return true;
         return false;
@@ -105,6 +105,12 @@ const Board = (function () {
         return true;
     }
 
+    const reset = () => {
+        blocks = Array(boardSize).fill(emptyString);
+        mostRecentAddIndex = -1;
+        count = 0;
+    }
+
     const printBoard = () => {
         const horizontalEdge = "-----------"
         console.log(horizontalEdge);
@@ -115,7 +121,7 @@ const Board = (function () {
     }
 
 
-    return {checkWin, checkFull, addSignToBlock, printBoard};
+    return {checkWin, checkFull, addSignToBlock, reset, printBoard};
 })();
 
 
@@ -132,7 +138,7 @@ const Game = (function () {
 
     const playTurn = (index) => {
         if (gameEnded) {
-            console.log("The game has ended");
+            console.log("The game has already ended");
             return -1;
         }
         if (!Board.addSignToBlock(currPlayer, index)) return -2;
@@ -154,6 +160,13 @@ const Game = (function () {
         return -1;
     }
 
+    const reset = () => {
+        currPlayer = player1;
+        gameEnded = false;
+        Board.reset();
+        console.log("Reset Game");
+    }
+
     const start = () => {
         playTurn(4);
         playTurn(3);
@@ -165,6 +178,13 @@ const Game = (function () {
         playTurn(0);
         playTurn(1);
         playTurn(2);
+        reset();
+        playTurn(3);
+        playTurn(6);
+        playTurn(4);
+        playTurn(7);
+        playTurn(5);
+        playTurn(8);
     }
 
     return {start};
