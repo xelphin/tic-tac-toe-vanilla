@@ -135,7 +135,7 @@ const Board_DOM = (function () {
         return false;
     }
 
-    const checkWin = (blocks, sign) => {
+    const checkWin = (blocks, sign, mostRecentAddIndex) => {
         let {row, col} = Board_Helper.indexToRowCol(mostRecentAddIndex);
         if (   checkRowForWin(row, blocks, sign) 
             || checkColForWin(col, blocks, sign) 
@@ -158,7 +158,7 @@ const Board = (function () {
 
     const checkWin = () => {
         if (mostRecentAddIndex <0 || mostRecentAddIndex >= boardSize) return false;
-        return checkWin(blocks, blocks[mostRecentAddIndex]);
+        return Board_Helper.checkWin(blocks, blocks[mostRecentAddIndex], mostRecentAddIndex);
     }
 
     const checkFull = () => {
